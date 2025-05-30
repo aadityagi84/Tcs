@@ -1,45 +1,67 @@
 import { Link, useLocation } from "react-router-dom";
-import { footerImg } from "../../imagesProvider/AllImages";
 import { MdOutlineEmail } from "react-icons/md";
 import { CiLocationOn } from "react-icons/ci";
 import { BiPhoneCall } from "react-icons/bi";
 import { useEffect, useState } from "react";
-import homeApiService from "../../Services/HomePageService";
+import { footerImage } from "../../imagesProvider/AllImages";
 
 const Footer = () => {
   const { pathname } = useLocation();
-  const [footerData, setFooterData] = useState("");
-  const [aboutUsFooter, setAboutUsFooter] = useState("");
   const [menuLinks, setMenuLinks] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
-  const [contactDetails, setContactDetails] = useState("");
+
+  // Dummy Data
+  const aboutUsFooter = `The organizing committee of the 16TH TCS ANNUAL CONFERENCE & WORKSHOP(s) welcomes you one & all. We are extremely delighted to host this integrative event at our center and sincerely hope that you shall enjoy the scientific deliberations in similar enthusiasm as we have had in getting this together.`;
+
+  const contactDetails = {
+    Name1: "Mr Sitaram Ghogale",
+    Mobile1: "9819280796",
+    Name2: "Mr Sitaram Ghogale",
+    Mobile2: "9819280796",
+    EmailId: "tcs.mumbai2024@gmail.com",
+    Address: `Dr Prashant Tembhare
+Haematopathology Laboratory
+Room No 17, CCE Building,
+Advance Centre for Treatment, Research
+and Education in Cancer (ACTREC)
+Tata Memorial Centre
+Plot No 1 & 2, Sector 22
+Kharghar, Navi Mumbai - 410210
+Maharashtra, India`,
+  };
+
+  const dummyMenus = [
+    { Id: 1, MenuName: "Home", MenuUrl: "/", ChildMenus: [] },
+    { Id: 2, MenuName: "About Us", MenuUrl: "/about", ChildMenus: [] },
+    {
+      Id: 3,
+      MenuName: "Registration",
+      MenuUrl: "registration",
+      ChildMenus: [],
+    },
+    {
+      Id: 4,
+      MenuName: "Abstract & Awards",
+      MenuUrl: "abstract-awards",
+      ChildMenus: [],
+    },
+    { Id: 5, MenuName: "Workshop", MenuUrl: "workshop", ChildMenus: [] },
+    { Id: 6, MenuName: "Exhibition", MenuUrl: "exhibition", ChildMenus: [] },
+    {
+      Id: 7,
+      MenuName: "Organizing Committee",
+      MenuUrl: "organizing-committee",
+      ChildMenus: [],
+    },
+    { Id: 8, MenuName: "Contact Us", MenuUrl: "contact-us", ChildMenus: [] },
+  ];
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await homeApiService.getHomePageList();
-        const footerData = data.res.ContactMasterList?.[0];
-        setContactDetails(footerData);
-        const aboutUsText = data.res?.HomePage?.[0]?.AboutUs;
-        const aboutUsFooterText = data.res?.HomePage?.[0]?.AboutUsFooter;
-        const menus = data.res?.MenusList || [];
-
-        setFooterData(aboutUsText);
-        setAboutUsFooter(aboutUsFooterText);
-        setMenuLinks(menus);
-      } catch (error) {
-        console.error("Error fetching menu data:", error);
-      }
-    };
-
-    fetchData();
+    setMenuLinks(dummyMenus);
   }, []);
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setOpenMenuId(null);
   }, [pathname]);
 
@@ -49,7 +71,6 @@ const Footer = () => {
         setOpenMenuId(null);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -63,29 +84,17 @@ const Footer = () => {
 
   const contactInfo = {
     people: [
-      {
-        name: contactDetails.Name1,
-        phone: contactDetails.Mobile1,
-      },
-      {
-        name: contactDetails.Name2,
-        phone: contactDetails.Mobile2,
-      },
+      { name: contactDetails.Name1, phone: contactDetails.Mobile1 },
+      { name: contactDetails.Name2, phone: contactDetails.Mobile2 },
     ],
     email: contactDetails.EmailId,
     address: contactDetails.Address,
   };
 
-  // Helper function to render menu and its children
   const renderMenuItems = (menuItems) => {
     return menuItems.map((item) => {
-      const linkPath = `/${
-        item.MenuUrl !== "Home" ? item.MenuUrl.toLowerCase() : ""
-      }`;
-
-      // Check if the menu has child menus
+      const linkPath = `${item.MenuUrl.toLowerCase()}`;
       const hasChildren = item.ChildMenus && item.ChildMenus.length > 0;
-
       return (
         <div key={item.Id} className="menu-item relative">
           <li>
@@ -94,7 +103,7 @@ const Footer = () => {
                 onClick={(e) => toggleMenu(item.Id, e)}
                 className="flex items-center hover:underline focus:outline-none"
               >
-                {item.MenuName.replace(" +", "")}
+                {item.MenuName}
                 <span
                   className={`ml-1 transition-transform duration-200 ${
                     openMenuId === item.Id ? "rotate-180" : ""
@@ -105,31 +114,10 @@ const Footer = () => {
               </button>
             ) : (
               <Link to={linkPath} className="hover:underline">
-                {item.MenuName.replace(" +", "")}
+                {item.MenuName}
               </Link>
             )}
           </li>
-
-          {/* Render submenu items if they exist and are open */}
-          {hasChildren && openMenuId === item.Id && (
-            <ul className="absolute left-0 lg:top-full mt-1 bg-black bg-opacity-90 rounded shadow-lg p-3 space-y-2 min-w-48 z-10 border border-gray-600">
-              {item.ChildMenus.map((child) => {
-                const childPath = `/${child.MenuUrl.toLowerCase()}`;
-
-                return (
-                  <li key={child.Id}>
-                    <Link
-                      to={childPath}
-                      className="hover:underline text-sm block py-1 px-2 hover:bg-gray-700 rounded transition-colors"
-                      onClick={() => setOpenMenuId(null)}
-                    >
-                      {child.MenuName}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
         </div>
       );
     });
@@ -138,12 +126,12 @@ const Footer = () => {
   return (
     <footer
       className="bg-cover text-white py-10 px-6 md:px-20 xl:h-[700px]"
-      style={{ backgroundImage: `url(${footerImg.footer})` }}
+      style={{ backgroundImage: `url(${footerImage.footer})` }}
     >
       <div className="main-width mx-auto grid lg:grid-cols-3 md:grid-cols-2 gap-10 py-10 items-start">
         {/* Quick Links */}
         <div>
-          <h4 className="font-bold lg:text-[22px] lg:text-[20px] text-[18px] lg:leading-[35px] mb-4">
+          <h4 className="font-bold lg:text-[22px] text-[18px] lg:leading-[35px] mb-4">
             Quick Link
           </h4>
           <ul className="space-y-2 font-bold leading-[35px]">
@@ -153,25 +141,21 @@ const Footer = () => {
 
         {/* About Us */}
         <div>
-          <h4 className="font-bold lg:text-[22px] lg:text-[20px] text-[18px] lg:leading-[35px] mb-4">
+          <h4 className="font-bold lg:text-[22px] text-[18px] lg:leading-[35px] mb-4">
             About Us
           </h4>
           <div className="lg:w-[70%]">
             <div
               className="font-bold leading-[35px]"
-              dangerouslySetInnerHTML={{
-                __html:
-                  aboutUsFooter ||
-                  "The organizing committee of the 16TH TCS ANNUAL CONFERENCE & WORKSHOP(s) welcomes you one & all. We are extremely delighted to host this integrative event at our center and sincerely hope that you shall enjoy the scientific deliberations in similar enthusiasm as we have had in getting this together.",
-              }}
+              dangerouslySetInnerHTML={{ __html: aboutUsFooter }}
             />
           </div>
         </div>
 
         {/* Contact Info */}
         <div className="flex items-center lg:justify-center">
-          <div className="">
-            <h4 className="font-bold lg:text-[22px] lg:text-[20px] text-[18px] lg:leading-[35px] mb-4">
+          <div>
+            <h4 className="font-bold lg:text-[22px] text-[18px] lg:leading-[35px] mb-4">
               Contact
             </h4>
             <div className="space-y-3">

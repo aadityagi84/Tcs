@@ -1,0 +1,55 @@
+@media (min-width:1280px) {
+    .large_heading {
+        font-size: 60.52px;
+        font-style: normal;
+        font-weight: 900;
+    }
+
+    .mid_heading {
+        font-size: 45px;
+        font-style: normal;
+        font-weight: 700;
+    }
+}
+
+@media (min-width:1024px) and (max-width: 1279px) {
+    .large_heading {
+        font-size: 44.52px;
+        font-style: normal;
+        font-weight: 900;
+    }
+
+    .mid_heading {
+        font-size: 35px;
+        font-style: normal;
+        font-weight: 700;
+    }
+}
+
+@media (min-width:768px) and (max-width: 1023px) {
+    .large_heading {
+        font-size: 38.52px;
+        font-style: normal;
+        font-weight: 900;
+    }
+
+    .mid_heading {
+        font-size: 30px;
+        font-style: normal;
+        font-weight: 700;
+    }
+}
+
+@media (max-width: 767px) {
+    .large_heading {
+        font-size: 30.52px;
+        font-style: normal;
+        font-weight: 900;
+    }
+
+    .mid_heading {
+        font-size: 25px;
+        font-style: normal;
+        font-weight: 700;
+    }
+}

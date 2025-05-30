@@ -1,12 +1,10 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "@fontsource/dm-sans";
 import "./index.css";
-import "./styled/global.css";
+import "./global.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./event2025/contexts/LoginContext.jsx";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "./contexts/LoginContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
