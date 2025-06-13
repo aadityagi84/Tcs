@@ -176,7 +176,7 @@ export default function EditProfileForm() {
       { field: "state", label: "State" },
       { field: "city", label: "City" },
       { field: "mobile", label: "Mobile Number" },
-      { field: "countryCode", label: "Country Code" },
+      { field: "Number Code", label: "Number Code" },
       { field: "mealPreference", label: "Meal Preference" },
     ];
 
@@ -531,30 +531,33 @@ export default function EditProfileForm() {
               Contact Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <input
-                  type="text"
-                  name="countryCode"
-                  placeholder="Country Code* (+1, +91, etc.)"
-                  value={formData.countryCode}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 mt-2  border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-50 outline-none 0 placeholder-gray-500"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="tel"
-                  name="mobile"
-                  placeholder="Mobile*"
-                  value={formData.mobile}
-                  onChange={handleInputChange}
-                  pattern="^\d{10}$"
-                  maxLength={10}
-                  className="w-full px-4 py-3 mt-2  border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-50 outline-none 0 placeholder-gray-500"
-                  required
-                  title="Please enter a valid 10-digit mobile number"
-                />
+              <div className="grid grid-cols-[20%,1fr] gap-2">
+                <div>
+                  <input
+                    type="text"
+                    name="countryCode"
+                    placeholder="+91"
+                    value={formData.countryCode}
+                    onChange={handleInputChange}
+                    maxLength={4}
+                    className="w-full px-4 py-3 mt-2  border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-50 outline-none 0 placeholder-gray-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    placeholder="Mobile*"
+                    value={formData.mobile}
+                    onChange={handleInputChange}
+                    pattern="^\d{10}$"
+                    maxLength={10}
+                    className="w-full px-4 py-3 mt-2  border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-50 outline-none 0 placeholder-gray-500"
+                    required
+                    title="Please enter a valid 10-digit mobile number"
+                  />
+                </div>
               </div>
             </div>
           </div>

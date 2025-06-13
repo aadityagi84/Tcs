@@ -181,7 +181,7 @@ const Registration = () => {
       <Header />
       <PageBanner
         title={registrationData?.Name || "Registration"}
-        subtitle={registrationData?.Title || ""}
+        subtitle={""}
         breadcrumb="Home > Registration"
         backgroundImage={pagesBanner.banner}
         registrationData={registrationData}

@@ -1,4 +1,3 @@
-import React from "react";
 import Header from "../../Components/header/Header";
 import PageBanner from "../../Components/CombineBanner/Banners";
 import Footer from "../../Components/footer/Footer";
@@ -11,7 +10,7 @@ const EducationResources = () => {
       <PageBanner
         title={"Education Resources"}
         subtitle={
-          "The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops cordially invite you to join the"
+          "The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops cordially invite you to join the"
         }
         breadcrumb="Home > Education Resources"
       />
@@ -20,7 +19,7 @@ const EducationResources = () => {
           <div className="grid grid-cols-[10px,1fr] items-center gap-4">
             <div className={`bg-[#1560BD] h-full`}></div>
             <div
-              className={`xl:text-[50px] lg:text-[40px] uppercase md:text-[30px] text-[25px]  xl:leading-[55px] lg:leading-[45px] md:leading-[35px] leading-[30px]  text-[#1d1e1c] font-light`}
+              className={`xl:text-[50px] lg:text-[40px] uppercase md:text-[30px] text-[25px] xl:leading-[55px] lg:leading-[45px] md:leading-[35px] leading-[30px] text-[#1d1e1c] font-light`}
             >
               <span>Browse Resources</span>
             </div>

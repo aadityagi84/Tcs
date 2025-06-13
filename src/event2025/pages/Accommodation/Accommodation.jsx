@@ -20,10 +20,9 @@ const Accommodation = () => {
         if (!response) {
           return toast.error("Table will be Empty");
         }
-        const res = response?.data?.res;
+        const res = response?.data?.rc;
         // console.log("res", res);
-        const allData = res ? [res] : [];
-        setAccommodationData(allData);
+        setAccommodationData(res);
       } catch (err) {
         console.error("Error fetching accommodation data:", err);
         setError(err);
@@ -39,12 +38,13 @@ const Accommodation = () => {
     return <Loader />;
   }
 
+  // console.log(accommodationData, "yertufkjdtyduk");/
   return (
     <>
       <Header />
       <PageBanner
         title="Accommodation"
-        subtitle="The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops provide accommodation options for conference attendees"
+        subtitle=""
         breadcrumb="Home > Accommodation"
         backgroundImage={pagesBanner.banner}
       />
@@ -90,14 +90,18 @@ const Accommodation = () => {
                     <td className="border p-3 text-center">{item.Distance}</td>
                     <td className="border p-3">{item.Location}</td>
                     <td className="border p-3">
-                      <img
-                        src={item.ImageUrl}
-                        alt={item.Particular}
-                        className="w-[180px]"
-                      />
+                      {item.ImageUrl ? (
+                        <img
+                          src={item.ImageUrl}
+                          alt={item.Particular}
+                          className="w-[180px]"
+                        />
+                      ) : (
+                        "-"
+                      )}
                     </td>
                     <td className="border p-3 text-center">
-                      {item.Category ? item.Category : "Null"}
+                      {item.Category ? item.Category : "-"}
                     </td>
                     <td className="border p-3 text-center">
                       {item.MapLocation ? (
@@ -110,10 +114,13 @@ const Accommodation = () => {
                           View Map
                         </NavLink>
                       ) : (
-                        <>Null</>
+                        "-"
                       )}
                     </td>
-                    <td className="border p-3">{item.BookingContact}</td>
+                    <td
+                      className="border p-3"
+                      dangerouslySetInnerHTML={{ __html: item.BookingContact }}
+                    ></td>
                   </tr>
                 ))
               ) : (

@@ -9,7 +9,28 @@ export const headerMenuData = {
   ],
   mainNav: [
     { name: "Home", url: "/" },
-    { name: "About Us", url: "/about" },
+    {
+      name: "About Us",
+      url: "/about",
+      children: [
+        {
+          name: "The Society",
+          url: "/about",
+        },
+        {
+          name: "EC Members",
+          url: "/ECMembers",
+        },
+        {
+          name: "About Membership",
+          url: "/about-membership",
+        },
+        {
+          name: "Members List",
+          url: "/members-list",
+        },
+      ],
+    },
     { name: "Annual Meetings", url: "/annual-meetings" },
     { name: "Workshops & Conferences", url: "/workshops-conferences" },
     { name: "Education Resources", url: "/education-resources" },

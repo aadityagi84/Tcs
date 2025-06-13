@@ -48,7 +48,7 @@ const Organizing = () => {
       <Header />
       <PageBanner
         title={pageData.title}
-        subtitle={pageData.description}
+        subtitle={""}
         breadcrumb={`Home > ${pageData.title}`}
         backgroundImage={pageData.bannerImage}
       />

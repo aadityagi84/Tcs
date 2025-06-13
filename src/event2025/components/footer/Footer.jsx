@@ -75,72 +75,39 @@ const Footer = () => {
     email: contactDetails.EmailId,
     address: contactDetails.Address,
   };
-
-  // Helper function to render menu and its children
   const renderMenuItems = (menuItems) => {
-    return menuItems.map((item) => {
-      const linkPath = `/${
-        item.MenuUrl !== "Home" ? item.MenuUrl.toLowerCase() : ""
-      }`;
+    const flattenedItems = [];
 
-      // Check if the menu has child menus
-      const hasChildren = item.ChildMenus && item.ChildMenus.length > 0;
+    menuItems.forEach((item) => {
+      if (item.ChildMenus && Array.isArray(item.ChildMenus)) {
+        // Show children instead of parent
+        flattenedItems.push(...item.ChildMenus);
+      } else {
+        // Show parent if no children
+        flattenedItems.push(item);
+      }
+    });
+
+    return flattenedItems.map((item) => {
+      const linkPath =
+        item.MenuUrl !== "Home"
+          ? `/event2025/${item.MenuUrl.toLowerCase()}`
+          : "/event2025";
 
       return (
-        <div key={item.Id} className="menu-item relative">
-          <li>
-            {hasChildren ? (
-              <button
-                onClick={(e) => toggleMenu(item.Id, e)}
-                className="flex items-center hover:underline focus:outline-none"
-              >
-                {item.MenuName.replace(" +", "")}
-                <span
-                  className={`ml-1 transition-transform duration-200 ${
-                    openMenuId === item.Id ? "rotate-180" : ""
-                  }`}
-                >
-                  ▼
-                </span>
-              </button>
-            ) : (
-              <Link to={linkPath} className="hover:underline">
-                {item.MenuName.replace(" +", "")}
-              </Link>
-            )}
-          </li>
-
-          {/* Render submenu items if they exist and are open */}
-          {hasChildren && openMenuId === item.Id && (
-            <ul className="absolute left-0 lg:top-full mt-1 bg-black bg-opacity-90 rounded shadow-lg p-3 space-y-2 min-w-48 z-10 border border-gray-600">
-              {item.ChildMenus.map((child) => {
-                const childPath = `/${child.MenuUrl.toLowerCase()}`;
-
-                return (
-                  <li key={child.Id}>
-                    <Link
-                      to={childPath}
-                      className="hover:underline text-sm block py-1 px-2 hover:bg-gray-700 rounded transition-colors"
-                      onClick={() => setOpenMenuId(null)}
-                    >
-                      {child.MenuName}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+        <li key={item.Id}>
+          <a href={linkPath}>{item.MenuName}</a>
+        </li>
       );
     });
   };
 
   return (
     <footer
-      className="bg-cover text-white py-10 px-6 md:px-20 xl:h-[700px]"
+      className="bg-cover text-white py-10 px-6 md:px-20 xl:min-h-[500px]"
       style={{ backgroundImage: `url(${footerImg.footer})` }}
     >
-      <div className="main-width mx-auto grid lg:grid-cols-3 md:grid-cols-2 gap-10 py-10 items-start">
+      <div className="main-width mx-auto grid md:grid-cols-2 gap-10 py-10 items-start">
         {/* Quick Links */}
         <div>
           <h4 className="font-bold lg:text-[22px] lg:text-[20px] text-[18px] lg:leading-[35px] mb-4">
@@ -152,7 +119,7 @@ const Footer = () => {
         </div>
 
         {/* About Us */}
-        <div>
+        {/* <div>
           <h4 className="font-bold lg:text-[22px] lg:text-[20px] text-[18px] lg:leading-[35px] mb-4">
             About Us
           </h4>
@@ -166,7 +133,7 @@ const Footer = () => {
               }}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Contact Info */}
         <div className="flex items-center lg:justify-center">
@@ -192,9 +159,11 @@ const Footer = () => {
                 </Link>
               </p>
               <br />
-              <p className="whitespace-pre-line font-bold leading-[26px] grid grid-cols-[30px,1fr] gap-4 items-start">
+              <p className="  font-bold  grid grid-cols-[30px,1fr] gap-4 items-start">
                 <CiLocationOn className="text-[25px]" />
-                <span>{contactInfo.address}</span>
+                <span dangerouslySetInnerHTML={{ __html: contactInfo.address }}>
+                  {/* {} */}
+                </span>
               </p>
             </div>
           </div>

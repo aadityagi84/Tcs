@@ -29,6 +29,12 @@ export const API_ENDPOINTS = {
   GetCustomerPaymentList: `${API_URL}/api/Customer/GetCustomerPaymentList`,
   GetDashboardStatusList: `${API_URL}/api/Customer/GetDashboardStatusList`,
   GetCustomerAbstractList: `${API_URL}/api/Customer/GetCustomerAbstractList`,
+  GetDynamicRegistrationPricingData: `${API_URL}/api/Customer/GetDynamicRegistrationPricingData`,
+  GeCustomerMembershipList: `${API_URL}/api/Customer/GeCustomerMembershipList`,
+  GetEventSelectedPriceList: `${API_URL}/api/Customer/GetEventSelectedPriceList`,
+  GetResourceCategoryList: `${API_URL}/api/Customer/GetResourceCategoryList`,
+  GetResourceList: `${API_URL}/api/Customer/GetResourceList`,
+  CustomerLoginTokenRefresh: `${API_URL}/api/Website/CustomerLoginTokenRefresh`,
 };
 
 export { API_URL };

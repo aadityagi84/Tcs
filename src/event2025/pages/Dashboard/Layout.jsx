@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/dashboard/Sidebar";
 import TopNavbar from "../../components/dashboard/TopNavbar";
 import Footer from "../../components/footer/Footer";
@@ -6,6 +6,13 @@ import Footer from "../../components/footer/Footer";
 const LayoutDashboard = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [sidebarOpen]);
   return (
     <div className="grid 2xl:grid-cols-[12%,1fr] xl:grid-cols-[18%,1fr] lg:grid-cols-[21%,1fr] min-h-screen bg-gray-50 ">
       <div className="">
@@ -31,13 +38,18 @@ const LayoutDashboard = ({ children }) => {
       </div>
 
       {/* Main content area */}
-      <div className="flex flex-col flex-1">
-        <TopNavbar openSidebar={() => setSidebarOpen(true)} />
+      <div className="flex flex-col justify-between flex-1 ">
+        <div className="">
+          <TopNavbar openSidebar={() => setSidebarOpen(true)} />
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto main-width ">{children}</div>
-
-        <Footer />
+          {/* Scrollable content */}
+          <div className="main-width overflow-x-hidden overflow-y-auto  ">
+            {children}
+          </div>
+        </div>
+        <div className="">
+          <Footer />
+        </div>
       </div>
     </div>
   );

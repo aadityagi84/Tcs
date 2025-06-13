@@ -18,7 +18,6 @@ export default function UserDataModel({ open, onClose, data, setDatta }) {
                     </label>
                     <input
                       disabled
-                      disabled
                       value={data.NameOfPresentor}
                       onChange={(e) =>
                         setDatta((prev) => ({

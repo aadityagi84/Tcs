@@ -50,7 +50,7 @@ const AnnualAwards = () => {
       <Header />
       <PageBanner
         title="Annual Awards"
-        subtitle="The Cytometry Society (TCS)-India and the Organizing Committee of the 18th Annual TCS and workshops cordially invite you to join the"
+        subtitle=""
         breadcrumb="Home > Annual Awards"
         backgroundImage={pagesBanner.banner}
       />

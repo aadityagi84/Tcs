@@ -15,6 +15,7 @@ const Exhibition = () => {
     const fetchExhibitionData = async () => {
       try {
         const response = await societyApiService.getExhibitionPageList();
+        console.log(response, "exb");
         if (
           response &&
           response.categories &&
@@ -80,12 +81,13 @@ const Exhibition = () => {
     );
   }
 
+  // console.log(exhibitionData[0].ExhibitionImagesList[0].IsVideo);
   return (
     <>
       <Header />
       <PageBanner
         title="Exhibition"
-        subtitle="The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops cordially invite you to join the"
+        subtitle=""
         breadcrumb="Home > Exhibition"
         backgroundImage={pagesBanner.banner}
       />
@@ -115,34 +117,52 @@ const Exhibition = () => {
                   {category.ExhibitionImagesList &&
                   Array.isArray(category.ExhibitionImagesList) ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                      {category.ExhibitionImagesList.map((sponsor, index) => (
-                        <div
-                          key={index}
-                          className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 border border-gray-100 overflow-hidden"
-                        >
-                          {/* Background Pattern */}
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full transform translate-x-10 -translate-y-10 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                      {category.ExhibitionImagesList.map((sponsor, index) => {
+                        if (!sponsor) return null;
 
-                          {/* Logo Container */}
-                          <div className="relative z-10 flex items-center justify-center h-32">
-                            <img
-                              src={sponsor.ImageUrl}
-                              alt={`${category.ExhibitionCategory} Sponsor ${
-                                index + 1
-                              }`}
-                              className="max-h-full max-w-full object-contain filter group-hover:brightness-110 transition-all duration-300"
-                              loading="lazy"
-                              onError={(e) => {
-                                e.target.src = "/api/placeholder/200/80";
-                                e.target.alt = "Sponsor Logo";
-                              }}
-                            />
+                        return sponsor.IsVideo ? (
+                          <div
+                            key={index}
+                            className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg"
+                          >
+                            <iframe
+                              src={sponsor.YoutubeEmbedUrl}
+                              title={`Sponsor Video ${index + 1}`}
+                              className="w-full h-full"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            ></iframe>
                           </div>
+                        ) : (
+                          <div
+                            key={index}
+                            className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 border border-gray-100 overflow-hidden"
+                          >
+                            {/* Background Pattern */}
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full transform translate-x-10 -translate-y-10 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
 
-                          {/* Hover Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
-                        </div>
-                      ))}
+                            {/* Logo Container */}
+                            <div className="relative z-10 flex items-center justify-center h-32">
+                              <img
+                                src={sponsor.ImageUrl}
+                                alt={`${category.ExhibitionCategory} Sponsor ${
+                                  index + 1
+                                }`}
+                                className="max-h-full max-w-full object-contain filter group-hover:brightness-110 transition-all duration-300"
+                                loading="lazy"
+                                onError={(e) => {
+                                  e.target.src = "/api/placeholder/200/80";
+                                  e.target.alt = "Sponsor Logo";
+                                }}
+                              />
+                            </div>
+
+                            {/* Hover Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-20">

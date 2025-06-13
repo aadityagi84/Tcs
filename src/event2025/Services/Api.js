@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_ENDPOINTS } from "../Constant/ApiUrl";
 import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 
 // Get token from cookies only
 const getToken = () => {
@@ -9,7 +10,7 @@ const getToken = () => {
 };
 
 // Store auth token in cookies and user data in localStorage
-const storeAuthData = (data) => {
+export const storeAuthData = (data) => {
   // Set cookies with 7 days expiry for token only
   const cookieOptions = {
     expires: 7,
@@ -26,6 +27,8 @@ const storeAuthData = (data) => {
     email: data.EmailId,
     name: data.Name,
     mobileNo: data.MobileNo,
+    IsLifetimeMember: data.IsLifetimeMember ? 1 : 2,
+    IsMemberShip: data.IsMemberShip ? 1 : 2,
   };
   localStorage.setItem("user", JSON.stringify(userData));
 
@@ -73,6 +76,30 @@ export const getDisplayName = () => {
   return userData.name;
 };
 
+export const getEmail = () => {
+  const token = getToken();
+
+  if (!token) {
+    return {
+      name: "Guest",
+      userData: null,
+    };
+  }
+
+  const userData = getUserData();
+
+  if (!userData || !userData.name?.trim()) {
+    return {
+      name: "Guest",
+      userData: userData || null,
+    };
+  }
+
+  return {
+    userData,
+  };
+};
+
 // login
 export const login = async (data) => {
   try {
@@ -81,7 +108,7 @@ export const login = async (data) => {
       Password: data.password,
     });
 
-    console.log(response);
+    console.log("response from api  ", response);
     if (response.data && response.data.rs === 1) {
       storeAuthData(response.data.res);
       return "Login successful";
@@ -92,7 +119,7 @@ export const login = async (data) => {
     console.error("Login error:", error);
     throw new Error(
       error.response?.data?.res?.ResponseMessage ||
-      "Login failed. Please try again."
+        "Login failed. Please try again."
     );
   }
 };
@@ -105,8 +132,14 @@ export const Signup = async (data) => {
       Password: data.password,
     });
 
-    if (response.data && response.data.rs === 1) {
-      return "Registration successful. Please login.";
+    // console.log(response.data.res.ResponseStatus);
+
+    if (response.data) {
+      if (response.data.res.ResponseStatus === 1) {
+        return toast.success("Registration successful. Please login.");
+      } else if (response.data.res.ResponseStatus === 2) {
+        return toast.error("User already exists ! Please login");
+      }
     } else {
       throw new Error(
         response.data?.res?.ResponseMessage || "Registration failed"
@@ -116,7 +149,7 @@ export const Signup = async (data) => {
     console.error("Signup error:", error);
     throw new Error(
       error.response?.data?.res?.ResponseMessage ||
-      "Registration failed. Please try again."
+        "Registration failed. Please try again."
     );
   }
 };

@@ -20,7 +20,7 @@ const Home = () => {
       try {
         setLoading(true);
         const response = await apiService.getHomePageList();
-        console.log("response comes from services ", response);
+        // console.log("response comes from services ", response);
         setHomeData(response?.res);
       } catch (err) {
         console.error("Error fetching home data:", err);

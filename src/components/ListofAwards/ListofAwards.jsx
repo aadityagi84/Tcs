@@ -32,13 +32,15 @@ export const awardsList = [
   },
 ];
 
-const ListofAwards = () => {
+const ListofAwards = ({ data }) => {
+  // console.log(data?.[0].HomeImage);
+  const img = data?.[0].HomeImage;
   return (
     <div>
       <div className="grid xl:grid-cols-[30%,1fr] lg:grid-cols-[40%,1fr] gap-10">
         <div className="lg:block md:hidden">
           <img
-            src={ConfernceImages.awards_img}
+            src={img}
             alt="award"
             className="h-full w-full object-cover rounded-tr-[40px] rounded-bl-[40px]"
           />
@@ -53,9 +55,13 @@ const ListofAwards = () => {
               <span className="font-semibold"> Awards</span>
             </div>
           </div>
-          {awardsList.map((workshop, index) => (
-            <AwardList key={index} {...workshop} />
-          ))}
+          {data?.length ? (
+            data.map((workshop, index) => (
+              <AwardList key={index} {...workshop} />
+            ))
+          ) : (
+            <p>Loading awards or no data available.</p>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,15 @@
 import { aboutUs } from "../../imagesProvider/AllImages";
 
-const ContentComponent = ({ classes, grid, stripColor, data, img }) => {
+const ContentComponent = ({
+  classes,
+  grid,
+  stripColor,
+  data,
+  img,
+  aboutData,
+}) => {
+  // console.log(aboutData.HomeSocietyList);
+
   return (
     <div className="py-10">
       <div className={` gap-10 ${grid} `}>
@@ -14,11 +23,13 @@ const ContentComponent = ({ classes, grid, stripColor, data, img }) => {
             </div>
           </div>
           <div className="mt-10">
-            <p className="lg:text-[18px] leqading-[35px]">
-              {data.intro.paragraph ?? ""}  <br />
-              <br />
-              {data.description.paragraph ?? ""} 
-            </p>
+            <div
+              dangerouslySetInnerHTML={{
+                __html:
+                  aboutData.HomeSocietyList?.[0]?.SocietyHomeContent ||
+                  "<p>Loading...</p>",
+              }}
+            />
           </div>
         </div>
         <div className="">

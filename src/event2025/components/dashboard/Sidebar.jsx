@@ -9,66 +9,84 @@ import {
   X,
 } from "lucide-react";
 import { headerImages } from "../../imagesProvider/AllImages";
-import { logout } from "../../Services/Api";
+import { getUserData, logout } from "../../Services/Api";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/LoginContext";
 import { checkIsReceipt } from "../../Services/dashboardFunction/checkReceiptAvailabe";
+import { GetResourceCategoryList } from "../../Services/dashboardFunction/GetResourceCategoryList";
 
 const Sidebar = ({ mobile = false, closeSidebar }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [receiptData, setReceiptData] = useState(false);
+  const [resourceCategories, setResourceCategories] = useState([]);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
-
   const { user } = useAuth();
-  const [receiptData, setReceiptData] = useState(false);
 
   useEffect(() => {
     const checkReceipt = async () => {
       try {
         const response = await checkIsReceipt(user);
+        // console.log(response);
         if (response.data.rs === 1) {
           setReceiptData(true);
-        } else {
-          console.log("Receipt check failed:", response.data);
         }
       } catch (error) {
         console.error("Error fetching receipt data:", error);
       }
     };
+    const checkIsMember = async () => {
+      try {
+        const userData = getUserData();
+        // console.log("from sidebar", userData);
+        if (userData.IsMemberShip === 1) {
+          setIsMember(true);
+        }
+      } catch (error) {
+        console.error("Error checking membership:", error);
+      }
+    };
+
+    const getResourceList = async () => {
+      try {
+        const res = await GetResourceCategoryList({ user });
+        // console.log(res);
+        const valid = res.rc.filter(
+          (item) => item.Id !== null && item.ResourceCategory !== null
+        );
+        // console.log("valid", valid);
+        setResourceCategories(valid);
+      } catch (error) {
+        console.error("Error loading resource categories:", error);
+      }
+    };
+
     if (user) {
       checkReceipt();
+      checkIsMember();
+      getResourceList();
     }
-  }, [user]);
+  }, [user, isMember]);
 
-  // Helper to prefix /event2025 if not already there
   const prefixPath = (path) => {
-    if (!path.startsWith("/event2025")) {
+    if (!path.startsWith("/event2025/")) {
       return `/event2025${path.startsWith("/") ? path : "/" + path}`;
     }
     return path;
   };
 
-  // Determine logo link:
-  // If current path is inside /event2025 → logo links to /event2025
-  // Else → logo links to /
-  const logoLink = location.pathname.startsWith("/event2025")
+  const logoLink = location.pathname.startsWith("/event2025/")
     ? "/event2025"
     : "/";
-
-  const currentPath = location.pathname.startsWith("/event2025")
-    ? location.pathname.replace("/event2025/", "").split("/")[0]
-    : location.pathname.split("/")[1];
 
   const menuItems = [
     {
       id: "dashboard",
       icon: <LayoutDashboard size={20} />,
       label: "Dashboards",
-    },
-    {
-      id: "resources",
-      icon: <BookOpen size={20} />,
-      label: "Resources",
     },
     {
       id: "payment-history",
@@ -106,7 +124,7 @@ const Sidebar = ({ mobile = false, closeSidebar }) => {
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-[100vh]">
-      {/* Logo and Close Button (for mobile) */}
+      {/* Logo */}
       <div className="p-4 flex items-center justify-between">
         <div className="overflow-hidden flex items-center">
           <Link to={logoLink}>
@@ -129,14 +147,9 @@ const Sidebar = ({ mobile = false, closeSidebar }) => {
 
       {/* Navigation Menu */}
       <nav className="flex-1 mt-2 space-y-1 px-2">
+        {/* Standard Items */}
         {menuItems.map((item) => {
-          // Compare stripped path to handle /event2025 prefix
-          const cleanId = item.id.startsWith("dashboard/registration")
-            ? "dashboard"
-            : item.id.split("/")[0];
-
-          const isActive = currentPath === cleanId;
-
+          const isActive = location.pathname === prefixPath(`/${item.id}`);
           return (
             <Link
               key={item.id}
@@ -159,6 +172,49 @@ const Sidebar = ({ mobile = false, closeSidebar }) => {
             </Link>
           );
         })}
+
+        {isMember && (
+          <div className="px-2">
+            <button
+              onClick={() => setIsResourcesOpen(!isResourcesOpen)}
+              className="flex items-center w-full px-4 py-3 text-sm text-left rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
+            >
+              <BookOpen size={20} className="mr-3 text-blue-600" />
+              <span className="font-medium flex-1">Resources</span>
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  isResourcesOpen ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <div
+              className={`transition-all overflow-y-auto hide-scrollbar ${
+                isResourcesOpen ? "max-h-[300px]" : "max-h-0"
+              }`}
+            >
+              {resourceCategories.map((res) => (
+                <Link
+                  key={res.Id}
+                  to={prefixPath(`/resources/${res.Id}`)}
+                  onClick={mobile ? closeSidebar : undefined}
+                  className="block ml-9 px-4 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100"
+                >
+                  {res.ResourceCategory}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Logout Button */}

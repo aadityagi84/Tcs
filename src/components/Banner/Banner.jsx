@@ -8,14 +8,15 @@ import { banner } from "../../imagesProvider/AllImages";
 import Header from "../header/Header";
 import BannerContent01 from "./BannerContent01";
 
-const Banner = () => {
+const Banner = ({ data }) => {
+  // console.log("data from banner", data);
   return (
     <div
       className={` w-full    bg-cover relative overflow-hidden`}
       style={{ backgroundImage: `url(${banner.bannerImg})` }}
     >
       <div className="">
-        <div className="absolute top-0 left-0 lg:block hidden">
+        <div className="absolute top-0 left-0 lg:block hidden -z-2">
           <img src={banner.dna} alt="dna" />
         </div>
         <div className="absolute bottom-0 right-[38%]">
@@ -27,7 +28,9 @@ const Banner = () => {
       </div>
       <div className=""></div>
       <div className=""></div>
-      <Header />
+      <div className="relative z-40">
+        <Header />
+      </div>
       <div className="main-width   flex items-center ">
         <Swiper
           spaceBetween={50}
@@ -38,7 +41,7 @@ const Banner = () => {
           className="mySwiper w-full h-full"
         >
           <SwiperSlide>
-            <Banner02 data={conferenceDetails} />
+            <Banner02 data={conferenceDetails} bannerdata={data} />
           </SwiperSlide>
           <SwiperSlide className="!h-[800px] flex items-center ">
             <BannerContent01 data={conferenceDetails} />

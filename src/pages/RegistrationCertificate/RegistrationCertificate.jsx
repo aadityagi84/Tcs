@@ -1,21 +1,83 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../Components/header/Header";
 import PageBanner from "../../Components/CombineBanner/Banners";
 import Footer from "../../Components/footer/Footer";
-import { certificates } from "../../imagesProvider/AllImages";
+import { GetRegCertificatePageList } from "../../services/HomeService";
+import Loader from "../../Components/Loader/Loader";
 
 const RegistrationCertificate = () => {
-  const registration = [
-    { img: certificates.RegisCertificate, title: "Registration Certificate" },
-    { img: certificates.gstCertificate, title: "GST Certificate" },
-  ];
+  const [certificateData, setCertificateData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const getCertificateData = async () => {
+    try {
+      const data = await GetRegCertificatePageList();
+
+      if (data && data.length > 0) {
+        setCertificateData(data[0]);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log("Error fetching certificate data:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getCertificateData();
+  }, []);
+
+  const getRegistrationData = () => {
+    if (!certificateData) return [];
+
+    const registrationArray = [];
+
+    if (certificateData.DocumentUrl1) {
+      registrationArray.push({
+        img: certificateData.DocumentUrl1,
+        title: certificateData.DocumentName || "Registration Certificate",
+      });
+    }
+
+    if (certificateData.DocumentUrl2) {
+      registrationArray.push({
+        img: certificateData.DocumentUrl2,
+        title: certificateData.DocumentName2 || "Certificate",
+      });
+    }
+
+    if (certificateData.DocumentUrl3) {
+      registrationArray.push({
+        img: certificateData.DocumentUrl3,
+        title: certificateData.DocumentName3 || "Certificate",
+      });
+    }
+
+    return registrationArray;
+  };
+
+  const registration = getRegistrationData();
+
+  if (loading) {
+    return (
+      <div>
+        <Header />
+        <div className="main-width py-10 text-center">
+          <Loader />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div>
       <Header />
       <PageBanner
-        title={"Registration Certificate"}
+        title={certificateData?.Title || "Registration Certificate"}
         subtitle={
-          "The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops cordially invite you to join the"
+          certificateData?.Description?.replace(/<[^>]*>/g, "") ||
+          "The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops cordially invite you to join the"
         }
         breadcrumb="Home > Registration Certificate"
       />
@@ -25,7 +87,9 @@ const RegistrationCertificate = () => {
           <div
             className={`xl:text-[50px] lg:text-[40px] uppercase md:text-[30px] text-[25px]  xl:leading-[55px] lg:leading-[45px] md:leading-[35px] leading-[30px]  text-[#1d1e1c] font-light`}
           >
-            <span>Registration & Election Certificate</span>
+            <span>
+              {certificateData?.Title || "Registration & Election Certificate"}
+            </span>
           </div>
         </div>
         <div className="grid lg:grid-cols-3 md:grid-cols-2 md:gap-4 gap-20 py-20">

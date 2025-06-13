@@ -1,146 +1,106 @@
 import { useState, useEffect } from "react";
 import { FaArrowRight } from "react-icons/fa";
-const tabs = ["2020 Resources", "2021 Resources", "2022 Resources"];
+import {
+  GetResourcePageList,
+  GetResourcePageDetailsList,
+} from "../../services/HomeService";
+import Loader from "../Loader/Loader";
 
-const dataByYear = {
-  "2020 Resources": [
-    {
-      title: "2020: Intro to Immune System",
-      presenter: "Dr. A. Sharma",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2020: Immunology Basics",
-      presenter: "Dr. B. Mehta",
-      affiliation: "AIIMS, Delhi",
-    },
-    {
-      title: "2020: Intro to Immune System",
-      presenter: "Dr. A. Sharma",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2020: Immunology Basics",
-      presenter: "Dr. B. Mehta",
-      affiliation: "AIIMS, Delhi",
-    },
-    {
-      title: "2020: Intro to Immune System",
-      presenter: "Dr. A. Sharma",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2020: Immunology Basics",
-      presenter: "Dr. B. Mehta",
-      affiliation: "AIIMS, Delhi",
-    },
-  ],
-  "2021 Resources": [
-    {
-      title: "2021: Immune Response Pathways",
-      presenter: "Dr. Sunil K. Arora",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2021: Cellular Immunity Explained",
-      presenter: "Dr. R. Kapoor",
-      affiliation: "NIMHANS, Bangalore",
-    },
-    {
-      title: "2021: Immune Response Pathways",
-      presenter: "Dr. Sunil K. Arora",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2021: Cellular Immunity Explained",
-      presenter: "Dr. R. Kapoor",
-      affiliation: "NIMHANS, Bangalore",
-    },
-    {
-      title: "2021: Immune Response Pathways",
-      presenter: "Dr. Sunil K. Arora",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2021: Cellular Immunity Explained",
-      presenter: "Dr. R. Kapoor",
-      affiliation: "NIMHANS, Bangalore",
-    },
-    {
-      title: "2021: Immune Response Pathways",
-      presenter: "Dr. Sunil K. Arora",
-      affiliation: "PGIMER, Chandigarh",
-    },
-    {
-      title: "2021: Cellular Immunity Explained",
-      presenter: "Dr. R. Kapoor",
-      affiliation: "NIMHANS, Bangalore",
-    },
-  ],
-  "2022 Resources": [
-    {
-      title: "2022: New Vaccine Insights",
-      presenter: "Dr. R. Khanna",
-      affiliation: "THSTI, Faridabad",
-    },
-    {
-      title: "2022: Cytokine Storm Case Study",
-      presenter: "Dr. S. Iyer",
-      affiliation: "CMC, Vellore",
-    },
-    {
-      title: "2022: New Vaccine Insights",
-      presenter: "Dr. R. Khanna",
-      affiliation: "THSTI, Faridabad",
-    },
-    {
-      title: "2022: Cytokine Storm Case Study",
-      presenter: "Dr. S. Iyer",
-      affiliation: "CMC, Vellore",
-    },
-    {
-      title: "2022: New Vaccine Insights",
-      presenter: "Dr. R. Khanna",
-      affiliation: "THSTI, Faridabad",
-    },
-    {
-      title: "2022: Cytokine Storm Case Study",
-      presenter: "Dr. S. Iyer",
-      affiliation: "CMC, Vellore",
-    },
-    {
-      title: "2022: New Vaccine Insights",
-      presenter: "Dr. R. Khanna",
-      affiliation: "THSTI, Faridabad",
-    },
-    {
-      title: "2022: Cytokine Storm Case Study",
-      presenter: "Dr. S. Iyer",
-      affiliation: "CMC, Vellore",
-    },
-  ],
-};
 const EducationResourcesComponent = () => {
-  const [activeTab, setActiveTab] = useState("2020 Resources");
+  const [tabs, setTabs] = useState([]);
+  const [activeTab, setActiveTab] = useState("");
   const [loading, setLoading] = useState(false);
   const [resources, setResources] = useState([]);
+  const [categoriesData, setCategoriesData] = useState({});
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [totalResourceCount, setTotalResourceCount] = useState(0);
 
   useEffect(() => {
-    setResources(dataByYear[activeTab]);
-  }, [activeTab]);
+    const fetchResourceCategories = async () => {
+      try {
+        const data = await GetResourcePageList();
+        if (data && data.length > 0) {
+          const yearTabs = data.map((item) => item.YearResource);
+          setTabs(yearTabs);
+
+          setActiveTab(yearTabs[0]);
+
+          const categoriesMap = {};
+          data.forEach((item) => {
+            categoriesMap[item.YearResource] = item.CategoriesList;
+          });
+          setCategoriesData(categoriesMap);
+
+          if (data[0].CategoriesList && data[0].CategoriesList.length > 0) {
+            setActiveCategory(data[0].CategoriesList[0]);
+            const totalCount = data.reduce((acc, year) => {
+              return (
+                acc +
+                year.CategoriesList.reduce(
+                  (yearAcc, cat) => yearAcc + cat.ResourceCount,
+                  0
+                )
+              );
+            }, 0);
+            setTotalResourceCount(totalCount);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching resource categories:", error);
+      }
+    };
+
+    fetchResourceCategories();
+  }, []);
+
+  useEffect(() => {
+    if (activeCategory) {
+      fetchResourceDetails(activeCategory.Id);
+    }
+  }, [activeCategory]);
+
+  const fetchResourceDetails = async (categoryId) => {
+    try {
+      setLoading(true);
+      const { resources: resourceData } = await GetResourcePageDetailsList(
+        1,
+        10,
+        categoryId
+      );
+      setResources(resourceData);
+    } catch (error) {
+      console.error("Error fetching resource details:", error);
+      setResources([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTabClick = (tab) => {
-    if (tab === activeTab) return;
+    if (tab === activeTab || !categoriesData[tab]) return;
+
     setLoading(true);
     setTimeout(() => {
       setActiveTab(tab);
-      setResources(dataByYear[tab]);
+      if (categoriesData[tab] && categoriesData[tab].length > 0) {
+        setActiveCategory(categoriesData[tab][0]);
+      }
       setLoading(false);
     }, 1300);
   };
 
+  const handleCategoryClick = (category) => {
+    setActiveCategory(category);
+  };
+
+  const handleViewMore = (resource) => {
+    if (resource.FileUrl) {
+      window.open(resource.FileUrl, "_blank");
+    }
+  };
+
   return (
-    <div className="p-6  mx-auto">
+    <div className="p-6 mx-auto">
       {/* Tabs */}
       <div className="flex border-b mb-4 space-x-8">
         {tabs.map((tab) => (
@@ -159,14 +119,50 @@ const EducationResourcesComponent = () => {
       </div>
 
       {/* Tag */}
-      <div className="relative mb-8 inline-block">
-        <div className="bg-[#D4EBF8] text-black px-4 py-4 rounded-tr-[10px] rounded-bl-[10px] text-sm font-semibold flex items-center gap-2 shadow-sm">
-          Immunology Lecture Series
-          <span className="border-2 border-blue-500 text-blue-700 bg-white px-2 py-0.5 rounded-md text-xs font-bold">
-            16
-          </span>
-        </div>
-        <div className="absolute left-[40%] -bottom-3 w-6 h-6 bg-blue-100 rotate-45"></div>
+      <div className="mb-8 flex flex-wrap gap-4 relative">
+        {categoriesData[activeTab] && categoriesData[activeTab].length > 0 ? (
+          <>
+            {categoriesData[activeTab].map((category) => (
+              <div key={category.Id} className="relative inline-block">
+                <div
+                  className={`text-black px-4 py-4 rounded-tr-[10px] rounded-bl-[10px] text-sm font-semibold flex items-center gap-2 shadow-sm cursor-pointer transition-colors ${
+                    activeCategory && activeCategory.Id === category.Id
+                      ? "bg-[#D4EBF8]"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  {category.ResourceCategory}
+                  <span className="border-2 border-blue-500 text-blue-700 bg-white px-2 py-0.5 rounded-md text-xs font-bold">
+                    {category.ResourceCount}
+                  </span>
+                </div>
+                <div className="absolute left-[40%] -bottom-3 w-6 h-6 bg-blue-100 rotate-45"></div>
+              </div>
+            ))}
+
+            {/* Show "No Data Found" if all ResourceCount are 0 */}
+            {activeCategory.ResourceCount === 0 ? (
+              <div className="w-full flex justify-center mt-4">
+                <div className="flex items-center gap-3 text-sm font-semibold text-gray-700 px-6 py-4 rounded-xl">
+                  No Data Found
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+          </>
+        ) : (
+          <div className="relative inline-block">
+            <div className="bg-gray-200 text-gray-600 px-4 py-4 rounded-tr-[10px] rounded-bl-[10px] text-sm font-semibold flex items-center gap-2 shadow-sm">
+              No Data Found
+              <span className="border-2 border-gray-400 text-gray-600 bg-white px-2 py-0.5 rounded-md text-xs font-bold">
+                0
+              </span>
+            </div>
+            <div className="absolute left-[40%] -bottom-3 w-6 h-6 bg-gray-200 rotate-45"></div>
+          </div>
+        )}
       </div>
 
       {/* Loader or Content */}
@@ -179,10 +175,13 @@ const EducationResourcesComponent = () => {
         <div className="space-y-4">
           {resources.map((res, index) => (
             <div key={index} className="bg-[#F6F6F6] p-4 rounded-xl shadow-sm">
-              <p className="font-bold">{res.title}</p>
-              <p className="font-bold">Presenter: {res.presenter}</p>
-              <p className="font-bold">Affiliation: {res.affiliation}</p>
-              <button className="mt-3 bg-blue-600 text-white px-4 py-1.5 rounded-tr-[5px] rounded-bl-[5px]  flex items-center gap-2 hover:bg-blue-700 transition">
+              <p className="font-bold">{res.TitleOftheTalk}</p>
+              <p className="font-bold">Presenter: {res.PresenterName}</p>
+              <p className="font-bold">Affiliation: {res.Affiliation}</p>
+              <button
+                onClick={() => handleViewMore(res)}
+                className="mt-3 bg-blue-600 text-white px-4 py-1.5 rounded-tr-[5px] rounded-bl-[5px] flex items-center gap-2 hover:bg-blue-700 transition"
+              >
                 View More <FaArrowRight size={12} />
               </button>
             </div>

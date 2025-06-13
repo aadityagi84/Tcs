@@ -2,18 +2,9 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { aboutUs } from "../../imagesProvider/AllImages";
 
-const MemberComponent = ({ grid, stripColor }) => {
-  const members = [
-    "/members/member1.jpg",
-    "/members/member2.jpg",
-    "/members/member3.jpg",
-    "/members/member4.jpg",
-    "/members/member5.jpg",
-    "/members/member6.jpg",
-    "/members/member7.jpg",
-    "/members/member8.jpg",
-    "/members/member9.jpg",
-  ];
+const MemberComponent = ({ grid, stripColor, apiData }) => {
+  // console.log(apiData.HomeSocietyList?.[0]);
+  const data = apiData.HomeSocietyList?.[0];
   return (
     <div>
       <div className="">
@@ -29,21 +20,23 @@ const MemberComponent = ({ grid, stripColor }) => {
               </div>
             </div>
             <div className="md:mt-10 mt-6">
-              <p className="lg:text-[18px] leqading-[35px]">
-                The Cytometry Society (TCS)-India and the Organizing Committee
-                of the 16th Annual TCS and workshops cordially invite you to
-                join the 16th TCS 2024 in Navi Mumbai/Mumbai to participate in
-                one of the most celebrated academic events in Indian flow
-                cytometry. 
-                <br />
-              </p>
+              {data?.BecomeMemberDescription ? (
+                <p
+                  className="lg:text-[18px] leading-[35px]"
+                  dangerouslySetInnerHTML={{
+                    __html: data.BecomeMemberDescription,
+                  }}
+                ></p>
+              ) : (
+                <p className="lg:text-[18px] leading-[35px]">Loading...</p>
+              )}
             </div>
           </div>
           <div className="">
             <div className="relative  flex items-center md:flex-row flex-col  gap-8  overflow-hidden">
               {/* Dotted Circle Group */}
               <div className="">
-                <img src={aboutUs.members_group} alt="" />
+                <img src={data?.BecomeMemberImage} alt="" />
               </div>
 
               {/* Text & Button */}

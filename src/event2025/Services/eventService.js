@@ -1,6 +1,8 @@
 // services/eventService.js
 import axios from "axios";
 import { API_ENDPOINTS } from "../Constant/ApiUrl";
+const API_URL = import.meta.env.VITE_API_URL;
+
 import toast from "react-hot-toast";
 import { logout } from "./Api";
 
@@ -12,7 +14,7 @@ function getCookie(name) {
 }
 
 const api = axios.create({
-  baseURL: "https://eventadminapi.anmoluphaar.in/api",
+  baseURL: `${API_URL}/api`,
   headers: {
     Accept: "*/*",
     "Content-Type": "application/json",

@@ -35,7 +35,7 @@ const Signin = () => {
       const userData = getUserData();
       authLogin(userData);
 
-      navigate(from, { replace: true });
+      // navigate(from, { replace: true });
     } catch (error) {
       console.error("Login failed", error);
       toast.error(error.message || "Login failed");

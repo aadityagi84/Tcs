@@ -4,14 +4,27 @@ import { CiLocationOn } from "react-icons/ci";
 import { BiPhoneCall } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { footerImage } from "../../imagesProvider/AllImages";
+import { getHomePageData } from "../../services/HomeService";
 
 const Footer = () => {
   const { pathname } = useLocation();
   const [menuLinks, setMenuLinks] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [data, setdata] = useState("");
+  useEffect(() => {
+    const getData = async () => {
+      const data = await getHomePageData();
+      if (data) {
+        setdata(data);
+      }
+    };
+    getData();
+  }, []);
 
+  // console.log("from footer", data.HomeSocietyList?.[0].AboutUsFooter);
+  const aboutUsFooter = data.HomeSocietyList?.[0].AboutUsFooter;
   // Dummy Data
-  const aboutUsFooter = `The organizing committee of the 16TH TCS ANNUAL CONFERENCE & WORKSHOP(s) welcomes you one & all. We are extremely delighted to host this integrative event at our center and sincerely hope that you shall enjoy the scientific deliberations in similar enthusiasm as we have had in getting this together.`;
+  // const aboutUsFooter = `The organizing committee of the 16TH TCS ANNUAL CONFERENCE & WORKSHOP(s) welcomes you one & all. We are extremely delighted to host this integrative event at our center and sincerely hope that you shall enjoy the scientific deliberations in similar enthusiasm as we have had in getting this together.`;
 
   const contactDetails = {
     Name1: "Mr Sitaram Ghogale",

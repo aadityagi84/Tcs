@@ -7,6 +7,10 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./Auth/ProtectedRoute";
 import LayoutDashboard from "./pages/Dashboard/Layout";
 import UnderDevelopment from "./pages/404/UnderDevelopment";
+import MemberReciept from "./components/dashboard/PaymentHistoryTable/MemberReciept";
+import ResourcePage from "./components/ResourcePage/ResourcePage";
+import Plan from "./pages/Plans&Price/Plan";
+import MembershipRecipt from "./pages/Receipt/MembershipRecipt";
 
 // Lazy load pages
 const Home = React.lazy(() => import("./components/Home/Home"));
@@ -56,7 +60,7 @@ const publicRoutes = [
   { path: "society", element: <About /> },
   { path: "faculty", element: <Faculty /> },
   { path: "committee", element: <Organizing /> },
-  { path: "conferance", element: <Conference /> },
+  { path: "program", element: <Conference /> },
   { path: "workshop", element: <Workshop /> },
   { path: "membership", element: <Membership /> },
   { path: "registration", element: <Registration /> },
@@ -76,11 +80,14 @@ const protectedRoutes = [
       { path: "edit-profile", element: <EditProfileForm /> },
       { path: "abstracts", element: <AbstractSubmissionForm /> },
       { path: "receipt", element: <ReceiptPage /> },
+      { path: "membershiprecipt", element: <MembershipRecipt /> },
+      { path: "MemberReciept", element: <MemberReciept /> },
+
       { path: "*", element: <NotFound link={"/event2025/dashboard"} /> },
     ],
   },
-  { path: "resources", element: <UnderDevelopment /> },
-  { path: "plans", element: <UnderDevelopment /> },
+  { path: "resources/:id", element: <ResourcePage /> },
+  { path: "plans", element: <Plan /> },
   { path: "edit-profile", element: <EditProfileForm /> },
   { path: "abstracts", element: <AbstractSubmissionForm /> },
   { path: "payment-history", element: <PaymentHistory /> },

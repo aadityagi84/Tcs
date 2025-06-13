@@ -31,21 +31,36 @@ const Workshop = () => {
     const fetchWorkshopData = async () => {
       try {
         const response = await ApiService.getWorkshopPageList();
+        // console.log(response.rc, "from workshop");
 
-        if (response && response.res) {
-          if (!Array.isArray(response.res)) {
-            const workshop = response.res;
+        if (response) {
+          if (!Array.isArray(response.rc)) {
+            const workshop = response.rc;
+            const dateStr = workshop.StartDate || "";
 
-            const dateStr = workshop.Date || "";
-            const dateParts = dateStr.match(
-              /(\d+)(?:st|nd|rd|th)\s+([A-Za-z]+),\s+(\d+)/
-            );
+            const dateObj = dateStr ? new Date(dateStr) : new Date();
+            const monthNames = [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "June",
+              "July",
+              "Aug",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dec",
+            ];
 
             const workshopItem = {
               title: workshop.Name || "",
-              month: dateParts ? dateParts[2] : "",
-              day: dateParts ? dateParts[1] : "",
-              year: dateParts ? dateParts[3] : "",
+              month: monthNames[dateObj.getMonth()]
+                .substring(0, 3)
+                .toUpperCase(), // "OCT"
+              day: dateObj.getDate(), // 30
+              year: dateObj.getFullYear(), // 2025
               status: "Download Brochure",
               documentUrl: workshop.DocumentUrl || "",
               bgColor: getRandomBgColor(),
@@ -55,17 +70,31 @@ const Workshop = () => {
 
             setWorkshopData([workshopItem]);
           } else {
-            const formattedData = response.res.map((workshop) => {
-              const dateStr = workshop.Date || "";
-              const dateParts = dateStr.match(
-                /(\d+)(?:st|nd|rd|th)\s+([A-Za-z]+),\s+(\d+)/
-              );
+            const formattedData = response.rc.map((workshop) => {
+              const dateStr = workshop.StartDate || "";
+              const dateObj = dateStr ? new Date(dateStr) : new Date();
+              const monthNames = [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "June",
+                "July",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+              ];
 
               return {
                 title: workshop.Name || "",
-                month: dateParts ? dateParts[2] : "",
-                day: dateParts ? dateParts[1] : "",
-                year: dateParts ? dateParts[3] : "",
+                month: monthNames[dateObj.getMonth()]
+                  .substring(0, 3)
+                  .toUpperCase(), // "OCT"
+                day: dateObj.getDate(), // 30
+                year: dateObj.getFullYear(), // 2025
                 status: "Download Brochure",
                 documentUrl: workshop.DocumentUrl || "",
                 bgColor: getRandomBgColor(),
@@ -98,16 +127,21 @@ const Workshop = () => {
     grouped.push(workshopData.slice(i, i + 3));
   }
 
+  // console.log(workshopData, "frpmiugit ");
   return (
     <>
-      <Header />
+      {/* <Header />
       <PageBanner
         title="Workshops"
         subtitle="The Cytometry Society (TCS)-India and the Organizing Committee of the 16th Annual TCS and workshops cordially invite you to join the..."
         breadcrumb="Home > Workshops"
         backgroundImage={pagesBanner.banner}
-      />
+      /> */}
+
       <div className="py-10">
+        <div className="main-width ">
+          <h2 className="text-[35px] font-semibold ">Workshops:</h2>
+        </div>
         {loading ? (
           <div className="text-center py-10">
             <Loader />
@@ -124,20 +158,23 @@ const Workshop = () => {
               key={idx}
               className="grid main-width lg:grid-cols-3 py-2 gap-5 items-start"
             >
-              {row.map((card, i) => (
-                <DateCard
-                  key={i}
-                  month={card.month}
-                  day={card.day}
-                  year={card.year}
-                  title={card.title}
-                  status={card.status}
-                  bgColor={card.bgColor}
-                  statusColor={card.statusColor}
-                  documentUrl={card.documentUrl}
-                  isOpen={true}
-                />
-              ))}
+              {row.map((card, i) => {
+                // console.log(card);
+                return (
+                  <DateCard
+                    key={i}
+                    month={card.month}
+                    day={card.day}
+                    year={card.year}
+                    title={card.title}
+                    status={card.status}
+                    bgColor={card.bgColor}
+                    statusColor={card.statusColor}
+                    documentUrl={card.documentUrl}
+                    isOpen={true}
+                  />
+                );
+              })}
             </div>
           ))
         )}

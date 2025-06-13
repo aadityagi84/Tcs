@@ -1,13 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../Components/header/Header";
 import PageBanner from "../../Components/CombineBanner/Banners";
 import AwardsComponent from "../../Components/AwardsComponent/AwardsComponent";
 import { awardDetails } from "../../static/awardDetails";
 import Footer from "../../Components/footer/Footer";
 import AwardList from "../../Components/ListofAwards/AwardList";
-import { awardsList } from "../../Components/ListofAwards/ListofAwards";
+import { GetAwardsPageList } from "../../services/HomeService";
 
 const AwardDetailsPage = () => {
+  const [apiData, setApiData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAwardsData = async () => {
+      try {
+        const data = await GetAwardsPageList();
+        setApiData(data);
+      } catch (error) {
+        console.error("Error fetching awards data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAwardsData();
+  }, []);
+
+  const award = Array.isArray(apiData?.AwardDetailsList)
+    ? apiData.AwardDetailsList
+    : [];
+    // console.log(apiData)
+
   return (
     <div>
       <Header />
@@ -44,7 +66,7 @@ const AwardDetailsPage = () => {
                 <span className="font-semibold"> Awards</span>
               </div>
             </div>
-            {awardsList.map((workshop, index) => (
+            {award.map((workshop, index) => (
               <AwardList key={index} {...workshop} />
             ))}
           </div>

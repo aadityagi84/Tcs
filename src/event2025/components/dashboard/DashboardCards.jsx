@@ -35,6 +35,8 @@ const DashboardCards = () => {
         // Check status
         const statusRes = await checkStatus(user);
         const rc = statusRes?.data?.res;
+        // console.log(rc);
+
         if (rc) {
           setStatus({
             IsAbstractProfile: rc.IsAbstractProfile,
@@ -99,7 +101,7 @@ const DashboardCards = () => {
 
   const cardData = [
     {
-      title: "Delegate Profile",
+      title: "Members / Delegate Profile",
       icon: dashboard.svg1,
       bgImage: dashboard.blueDash,
       bg: "",

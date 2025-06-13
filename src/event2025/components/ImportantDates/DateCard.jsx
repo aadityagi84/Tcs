@@ -6,12 +6,15 @@ const DateCard = ({
   year,
   title,
   status,
+  statusCode,
   bgColor,
   statusColor,
   documentUrl,
+  code,
   isOpen,
   showDate = true,
 }) => {
+  // console.log(documentUrl);
   const handleCardClick = () => {
     if (documentUrl && isOpen) {
       window.open(documentUrl, "_blank");
@@ -25,7 +28,7 @@ const DateCard = ({
 
   return (
     <div
-      className={`p-4 w-full rounded-tr-[20px] rounded-bl-[20px] ${bgColor} ${
+      className={`p-4 w-full rounded-tr-[20px] h-full rounded-bl-[20px] ${bgColor} ${
         isOpen ? "cursor-pointer transition-transform hover:scale-105" : ""
       }`}
       onClick={isOpen ? handleCardClick : undefined}
@@ -45,7 +48,13 @@ const DateCard = ({
             <h4 className="xl:text-[22px] lg:text-[20px] text-center text-[18px] font-bold">
               {title}
             </h4>
-            <div className={`font-semibold ${textColor}`}>{statusText}</div>
+            <div
+              className={`font-semibold ${
+                code === 2 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {statusCode}
+            </div>
           </div>
         </div>
       ) : (
@@ -53,7 +62,13 @@ const DateCard = ({
           <h4 className="xl:text-[22px] lg:text-[20px] text-center text-[18px] font-bold">
             {title}
           </h4>
-          <div className={`font-semibold ${textColor} mt-2`}>{statusText}</div>
+          <div
+            className={`font-semibold ${
+              code === 2 ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {statusText}
+          </div>
         </div>
       )}
     </div>

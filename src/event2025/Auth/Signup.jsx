@@ -33,19 +33,18 @@ const Signup = () => {
 
     try {
       await SignupApi(data);
-      toast.success("Signup successful! Logging you in...");
-
-      await login({
-        email: data.email,
-        password: data.password,
-      });
-      toast.success("Logged in successfully!");
+      // console.log(res);
+      // await login({
+      //   email: data.email,
+      //   password: data.password,
+      // });
+      // toast.success(res);
 
       const userData = getUserData();
 
       authLogin(userData);
 
-      navigate("/event2025/dashboard", { replace: true });
+      navigate("/event2025/signin", { replace: true });
     } catch (error) {
       console.error("Signup or auto-login failed", error);
       toast.error(error.message || "Registration failed. Please try again.");

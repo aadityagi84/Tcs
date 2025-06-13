@@ -1,9 +1,14 @@
 import React from "react";
-import { latestNews, newsData } from "../../static/newsData";
+// import { latestNews, newsData } from "../../static/newsData";/
 import NewsCard from "./NewsCard";
 import NewsGrid from "./NewsGrid";
 
-const NewsComponent = () => {
+const NewsComponent = ({ data }) => {
+  // console.log(data);
+
+  const leftnews = Array.isArray(data) ? data.slice(0, 4) : [];
+  const latestNews = Array.isArray(data) ? data.slice(4, 8) : [];
+
   return (
     <div className="grid 2xl:grid-cols-[70%,1fr] xl:grid-cols-[65%,1fr] lg:grid-cols-[60%,1fr] items-start gap-10">
       <div className="">
@@ -17,12 +22,12 @@ const NewsComponent = () => {
           </div>
         </div>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {newsData.map((item) => (
+          {leftnews.map((item) => (
             <NewsCard
-              key={item.id}
-              image={item.image}
-              title={item.title}
-              description={item.description}
+              key={item.Id}
+              image={item.Image}
+              title={item.Title}
+              description={item.Description}
             />
           ))}
         </div>
@@ -44,7 +49,8 @@ const NewsComponent = () => {
                 key={index}
                 newsType={data.newsType}
                 newsDate={data.newsDate}
-                dis={data.dis}
+                newsTitle={data.Title}
+                dis={data.Description}
                 link={data.link}
               />
             );

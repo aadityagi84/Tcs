@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoMenuOutline } from "react-icons/io5";
 import { TbXboxXFilled } from "react-icons/tb";
 import { header } from "../../imagesProvider/AllImages";
@@ -10,6 +10,14 @@ const MobileNav = () => {
 
   const mainLinks = headerMenuData.mainNav.filter((item) => !item.isButton);
   const buttonLink = headerMenuData.mainNav.find((item) => item.isButton);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [isOpen]);
 
   return (
     <>
@@ -31,7 +39,7 @@ const MobileNav = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-full bg-[#007DC5] shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-[1000px] w-full bg-[#007DC5] shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

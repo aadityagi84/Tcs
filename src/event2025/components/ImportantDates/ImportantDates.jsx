@@ -5,6 +5,7 @@ const ImportantDates = ({ data }) => {
   const importantDates = data?.ImpDates || [];
 
   const dateInfo = importantDates.map((date, index) => {
+    // console.log(date);
     const dateObj = new Date(date.Dates);
     const colors = [
       { bgColor: "extra_light", statusColor: "text-[#4AB518]" },
@@ -20,8 +21,10 @@ const ImportantDates = ({ data }) => {
       day: dateObj.getDate().toString(),
       year: dateObj.getFullYear().toString(),
       title: date.Name,
+      code: date.Status,
       status: date.StatusText,
       ...colors[index % colors.length],
+      statusCode: date.StatusText,
     };
   });
 

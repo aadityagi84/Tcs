@@ -16,7 +16,7 @@ const MembershipDetails = ({ membershipData }) => {
           </h2>
         </div> */}
 
-        <div className="lg:text-[20px] md:text-[17px] font-normal leading-[35px] lg:leading-[45px] space-y-4">
+        <div className="lg:text-[20px] md:text-[17px] font-normal leading-[35px]  space-y-4">
           <div dangerouslySetInnerHTML={renderDescription()} />
         </div>
 

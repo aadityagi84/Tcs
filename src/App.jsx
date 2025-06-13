@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Loader from "./Components/Loader/Loader";
 import EventRouter from "./event2025/EventRouter";
 import EventCard from "./Components/workshopsConference/EventCard";
+import UnderDevelopment from "./event2025/pages/404/UnderDevelopment";
 
 const Home = lazy(() => import("./pages/Home/Home"));
 const WorkshopsConference = lazy(() =>
@@ -36,6 +37,7 @@ const App = () => {
     { path: "/ECMembers", element: <ECMembers /> },
     { path: "/about-membership", element: <AboutMemberShip /> },
     { path: "/annual-meetings", element: <AnnualMeeting /> },
+    { path: "/members-list", element: <UnderDevelopment /> },
     { path: "/education-resources", element: <EducationResources /> },
     { path: "/election-notification-2023", element: <ElectionNotification /> },
     { path: "/awards", element: <AwardDetailsPage /> },

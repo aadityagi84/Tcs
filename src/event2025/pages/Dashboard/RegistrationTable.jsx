@@ -1,7 +1,9 @@
 // Registration.js
-
 import React, { useEffect, useState } from "react";
-import { GetDynamicRegistrationPricingData } from "../../Services/accomodation";
+import {
+  GetDynamicRegistrationPricingData,
+  getPriceMemebership,
+} from "../../Services/accomodation";
 import eventService, { getPaymentToken } from "../../Services/eventService";
 import { RegistrationSkeleton } from "../../components/Skeleton/TableSkeleton";
 import { useAuth } from "../../contexts/LoginContext";
@@ -10,6 +12,8 @@ import { useRazorpay } from "react-razorpay";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { UpdatePrice } from "../../Services/dashboardFunction/RegistrationTable";
+import { getEmail, storeAuthData } from "../../Services/Api";
+import { CustomerLoginTokenRefresh } from "../../Services/dashboardFunction/CustomerLoginTokenRefresh";
 
 const PricingTable = ({ regionData, selectedValue, onSelect }) => {
   if (!regionData || !regionData.Data || regionData.Data.length === 0)
@@ -120,44 +124,79 @@ const PricingTable = ({ regionData, selectedValue, onSelect }) => {
 
 const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
+  const [selectedValues, setSelectedValues] = useState({}); // Track selected Value for each day
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const [EventId, setEventId] = useState("");
   const [updatedPrice, setUpdatedPrice] = useState({});
 
   const { Razorpay } = useRazorpay();
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
   const { res } = eventPriceData;
-  console.log("form registration table", res);
   if (!res) return null;
+
   useEffect(() => {
     if (res?.EventId) {
       setPricing((prev) => ({ ...prev, EventTypeId: res.EventId.toString() }));
       setEventId(res.EventId);
     }
-    if (res && res.CurrencyId) {
-      setSelectedCurrency(res.CurrencyId);
+    if (res?.CurrencyId) {
+      setSelectedCurrency(res.CurrencyId.toString());
     }
   }, [res?.EventId, res]);
 
-  const groupedByDay = res.DropdownList?.reduce((acc, item) => {
-    if (!acc[item.DayType]) acc[item.DayType] = [];
-    acc[item.DayType].push(item);
-    return acc;
-  }, {});
+  const groupedByDay = Array.isArray(res.DropdownList)
+    ? res.DropdownList.reduce((acc, item) => {
+        if (!acc[item.DayType]) acc[item.DayType] = [];
+        acc[item.DayType].push(item);
+        return acc;
+      }, {})
+    : {};
 
-  const handleSelectionChange = (dayType, selectedText) => {
+  const groupedByDay2 = Array.isArray(res.DropdownList2)
+    ? res.DropdownList2.reduce((acc, item) => {
+        if (!acc[item.DayType]) acc[item.DayType] = [];
+        acc[item.DayType].push(item);
+        return acc;
+      }, {})
+    : {};
+
+  const handleSelectionChange = (dayType, selectedText, selectedValue) => {
     if (!selectedText || selectedText.trim() === "") {
-      toast.error("Workshop selection is mandatory");
+      setSelectedOptions((prev) => {
+        const newOptions = { ...prev };
+        delete newOptions[dayType];
+        return newOptions;
+      });
+      setSelectedValues((prev) => {
+        const newValues = { ...prev };
+        delete newValues[dayType];
+        return newValues;
+      });
+      setPricing((prev) => ({
+        ...prev,
+        [`WorkShopDay${dayType}`]: "",
+      }));
+      return;
+    }
+
+    // Check if the selected Value is already chosen for another day
+    const otherDay = dayType === "1" ? "2" : "1";
+    if (selectedValues[otherDay] === selectedValue) {
+      toast.error("You have already selected this workshop for another day.");
       return;
     }
 
     setSelectedOptions((prev) => ({
       ...prev,
       [dayType]: selectedText,
+    }));
+
+    setSelectedValues((prev) => ({
+      ...prev,
+      [dayType]: selectedValue,
     }));
 
     setPricing((prev) => ({
@@ -169,107 +208,24 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
   const handleCurrencyChange = async (e) => {
     const value = e.target.value;
     setSelectedCurrency(value);
-    // alert(`Selected currency: ${Number(value)}`);
-    // alert(`Selected event id: ${EventId}`);
-    const DataOptions = {
-      CurrencyId: Number(value),
-      EventTypeId: `${EventId}`,
-    };
-    console.log("updated amount on screen change ", DataOptions);
-    const updatedPriceResponse = await UpdatePrice(DataOptions, user);
-    if (updatedPriceResponse) {
-      const response = updatedPriceResponse.res;
-      setUpdatedPrice(response);
+    if (value && EventId) {
+      const DataOptions = {
+        CurrencyId: Number(value),
+        EventTypeId: `${EventId}`,
+      };
+      try {
+        const updatedPriceResponse = await UpdatePrice(DataOptions, user);
+        if (updatedPriceResponse?.res) {
+          setUpdatedPrice(updatedPriceResponse.res);
+        }
+      } catch (error) {
+        console.error("Error updating price:", error);
+        toast.error("Failed to update price. Please try again.");
+      }
     }
-    // console.log(
-    //   "response comes form api when update price",
-    //   updatedPriceResponse
-    // );
   };
 
-  // const handlePayment = async () => {
-  //   try {
-  //     if (
-  //       !pricing?.WorkShopDay1 &&
-  //       !pricing?.WorkShopDay2 &&
-  //       !pricing?.WorkShopDay3
-  //     ) {
-  //       alert("Please select at least one workshop before continuing.");
-  //       return;
-  //     }
-  //     const payload = {
-  //       ...pricing,
-  //       orderAmount: updatedPrice?.FinalPrice
-  //         ? Number(updatedPrice.FinalPrice)
-  //         : Number(pricing?.orderAmount ?? 0),
-
-  //       CurrencyId: selectedCurrency
-  //         ? Number(selectedCurrency)
-  //         : Number(pricing?.CurrencyId ?? 0),
-
-  //       EventTypeId: String(pricing?.EventTypeId || ""),
-
-  //       WorkShopDay1: pricing?.WorkShopDay1 || "",
-  //       WorkShopDay2: pricing?.WorkShopDay2 || "",
-  //       WorkShopDay3: pricing?.WorkShopDay3 || "",
-  //     };
-
-  //     setLoading(true);
-
-  //     const paymentResponse = await getPaymentToken(payload, user);
-  //     if (paymentResponse) {
-  //       setLoading(false);
-  //       const razorpayDetails = paymentResponse.res;
-  //       console.log(razorpayDetails);
-  //       const options = {
-  //         key: razorpayDetails.RazorPayAppId,
-  //         // amount: `${updatedPrice?.FinalPrice ?? res.FinalPrice}`,
-  //         // currency: `${updatedPrice ? selectedCurrency : "1"}`,
-  //         name: "TCS Event",
-  //         description:
-  //           "The organizing committee of the 16TH TCS ANNUAL CONFERENCE & WORKSHOP(S) welcomes you one & all.",
-  //         order_id: razorpayDetails.orderId,
-  //         handler: async (response) => {
-  //           console.log(response);
-  //           toast.success("Payment Successful!");
-  //           const receipt = await checkRecipetdata({
-  //             order_id: razorpayDetails.orderId,
-  //             rzp_id: response.razorpay_payment_id,
-  //           });
-
-  //           navigate("/dashboard/receipt", {
-  //             state: { receiptData: receipt.data.res },
-  //           });
-  //           console.log("Navigating with receipt:", receipt);
-  //         },
-  //         prefill: {
-  //           name: "John Doe",
-  //           email: "john.doe@example.com",
-  //           contact: "9999999999",
-  //         },
-  //         theme: {
-  //           color: "#1560BD",
-  //         },
-  //       };
-  //       if (paymentResponse.rs === 1) {
-  //         const rzp = new Razorpay(options);
-  //         rzp.on("payment.failed", function (response) {
-  //           toast.error("Payment failed! Please try again.");
-  //           console.error("Failed Payment:", response.error);
-  //         });
-  //         rzp.open();
-  //       }
-  //     }
-  //     console.log("Payment response:", paymentResponse);
-  //   } catch (error) {
-  //     console.error("Payment error:", error);
-  //     setLoading(false);
-  //   }
-  // };
-
-  console.log("updated price", updatedPrice);
   const handlePayment = async () => {
-    console.log(pricing);
     try {
       if (res?.IsWorkShop) {
         if (
@@ -288,26 +244,20 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
 
       const payload = {
         ...pricing,
-        orderAmount: updatedPrice?.FinalPrice
-          ? Number(updatedPrice.FinalPrice)
-          : Number(pricing?.orderAmount ?? 0),
-
+        orderAmount,
         CurrencyId: selectedCurrency
           ? Number(selectedCurrency)
           : Number(pricing?.CurrencyId ?? 0),
-
         EventTypeId: String(pricing?.EventTypeId || ""),
-
         WorkShopDay1: pricing?.WorkShopDay1 || "",
         WorkShopDay2: pricing?.WorkShopDay2 || "",
         WorkShopDay3: pricing?.WorkShopDay3 || "",
       };
       setLoading(true);
-      console.log("currency id will be comes from final", selectedCurrency);
 
       const paymentResponse = await getPaymentToken(payload, user);
 
-      if (paymentResponse) {
+      if (paymentResponse?.res) {
         setLoading(false);
         const razorpayDetails = paymentResponse.res;
 
@@ -332,7 +282,13 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
               rzp_id: response.razorpay_payment_id,
             });
 
-            // console.log("from payemt page", receipt.data.res);
+            const userData = await getEmail();
+            const email = userData.userData.email;
+            // console.log(email, "for get name ");
+
+            const data = await CustomerLoginTokenRefresh({ email, user });
+            await storeAuthData(data);
+            // console.log("after registration", receipt);
             navigate("/event2025/dashboard/receipt", {
               state: { receiptData: receipt.data.res },
             });
@@ -358,6 +314,7 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
       }
     } catch (error) {
       console.error("Payment error:", error);
+      toast.error("Payment processing failed. Please try again.");
       setLoading(false);
     }
   };
@@ -366,42 +323,39 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
     <div className="mt-6 p-4 bg-gray-50 border border-gray-300 rounded-lg">
       <h3 className="text-lg font-bold mb-4">Event Price Details</h3>
 
-      {res
-        ? res.CurrencyId == 1 && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-blue-200 rounded-lg mb-4">
-              <h4 className="font-semibold mb-4 text-yellow-800 flex items-center">
-                <span className="mr-2">🏭</span>Choose Amount according to
-                currency
-              </h4>
-              <div className="p-4 bg-white border border-yellow-300 rounded-lg shadow-sm">
-                <div className="flex items-center mb-3">
-                  <h5 className="font-medium text-gray-800">
-                    Choose Currency Method
-                  </h5>
-                </div>
-                <div className="mb-3">
-                  <select
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">--Select--</option>
-                    <option value="1">INR</option>
-                    <option value="2">USD</option>
-                  </select>
-                </div>
-                {selectedCurrency && (
-                  <div className="mt-2 p-2 bg-yellow-100 rounded">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Selected:</strong>{" "}
-                      {selectedCurrency === 1 ? "INR" : "USD"}
-                    </p>
-                  </div>
-                )}
-              </div>
+      {res?.CurrencyId === 1 && (
+        <div className="mt-4 p-4 bg-yellow-50 border border-blue-200 rounded-lg mb-4">
+          <h4 className="font-semibold mb-4 text-yellow-800 flex items-center">
+            <span className="mr-2">🏭</span>Choose Amount according to currency
+          </h4>
+          <div className="p-4 bg-white border border-yellow-300 rounded-lg shadow-sm">
+            <div className="flex items-center mb-3">
+              <h5 className="font-medium text-gray-800">
+                Choose Currency Method
+              </h5>
             </div>
-          )
-        : ""}
+            <div className="mb-3">
+              <select
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              >
+                <option value="">--Select--</option>
+                <option value="1">INR</option>
+                <option value="2">USD</option>
+              </select>
+            </div>
+            {/* {selectedCurrency && (
+              <div className="mt-2 p-2 bg-yellow-100 rounded">
+                <p className="text-sm text-yellow-800">
+                  <strong>Selected:</strong>{" "}
+                  {selectedCurrency === "1" ? "INR" : "USD"}
+                </p>
+              </div>
+            )} */}
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 p-4 bg-white border border-gray-200 rounded-lg">
         <h4 className="text-md font-semibold mb-3 text-blue-700">
@@ -410,37 +364,30 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-3 bg-blue-50 rounded">
             <p className="text-sm text-gray-600">Base Price</p>
-            <p className="text-xl font-bold text-blue-800">{`${
-              selectedCurrency == 1 ? "₹" : "$"
-            }
-            ${updatedPrice?.Price ?? res?.Price}
-
-            `}</p>
+            <p className="text-xl font-bold text-blue-800">
+              {`${selectedCurrency === "1" ? "₹" : "$"}${
+                updatedPrice?.Price ?? res?.Price
+              }`}
+            </p>
           </div>
-          {res.IsGst ? (
-            <>
-              <div className="text-center p-3 bg-orange-50 rounded">
-                <p className="text-sm text-gray-600">
-                  {updatedPrice?.CurrencyId == 2 ? "USD Rate" : "GST Amount"}
-                </p>
-                <p className="text-xl font-bold text-orange-600">
-                  {`${selectedCurrency == 1 ? "₹" : "₹"}
-                  ${
-                    updatedPrice?.CurrencyId == 1
-                      ? updatedPrice.GstAmount
-                      : updatedPrice.USDRate ?? res.GstAmount
-                  }`}
-                </p>
-              </div>
-            </>
-          ) : (
-            ""
+          {res.IsGst && (
+            <div className="text-center p-3 bg-orange-50 rounded">
+              <p className="text-sm text-gray-600">
+                {updatedPrice?.CurrencyId === 2 ? "USD Rate" : "GST Amount"}
+              </p>
+              <p className="text-xl font-bold text-orange-600">
+                {`${selectedCurrency === "1" ? "₹" : "₹"}${
+                  updatedPrice?.CurrencyId === 1
+                    ? updatedPrice.GstAmount
+                    : updatedPrice?.USDRate ?? res.GstAmount
+                }`}
+              </p>
+            </div>
           )}
-
           <div className="text-center p-3 bg-green-50 rounded">
             <p className="text-sm text-gray-600">Final Price</p>
             <p className="text-xl font-bold text-green-700">
-              {`${selectedCurrency == 1 ? "₹" : "$"}${
+              {`${selectedCurrency === "1" ? "₹" : "$"}${
                 updatedPrice?.FinalPrice ?? res.FinalPrice
               }`}
             </p>
@@ -450,11 +397,11 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
 
       {res.IsWorkShop
         ? res.IsWorkShop &&
-          groupedByDay && (
+          Object.keys(groupedByDay).length > 0 && (
             <div className="mt-4 p-4 bg-yellow-50 border border-blue-200 rounded-lg">
               <h4 className="font-semibold mb-4 text-yellow-800 flex items-center">
                 <span className="mr-2">🏭</span>Workshop Schedule - Select
-                Options for Each Day
+                Options for Day 1
               </h4>
               <div className="space-y-4">
                 {Object.keys(groupedByDay)
@@ -475,27 +422,104 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
                       <div className="mb-3">
                         <select
                           value={selectedOptions[dayType] || ""}
-                          onChange={(e) =>
-                            handleSelectionChange(dayType, e.target.value)
-                          }
+                          onChange={(e) => {
+                            const selectedOption = groupedByDay[dayType].find(
+                              (item) => item.Text === e.target.value
+                            );
+                            handleSelectionChange(
+                              dayType,
+                              e.target.value,
+                              selectedOption ? selectedOption.Value : null
+                            );
+                          }}
                           className="w-full p-3 border border-gray-300 rounded-lg"
                         >
                           <option value="">--Select--</option>
                           {groupedByDay[dayType].map((item) => (
-                            <option key={item.Value} value={item.Text}>
+                            <option
+                              key={item.Value}
+                              value={item.Text}
+                              disabled={selectedValues["2"] === item.Value}
+                            >
                               {item.Text}
                             </option>
                           ))}
                         </select>
                       </div>
-                      {selectedOptions[dayType] && (
+                      {/* {selectedOptions[dayType] && (
                         <div className="mt-2 p-2 bg-yellow-100 rounded">
                           <p className="text-sm text-yellow-800">
                             <strong>Selected:</strong>{" "}
                             {selectedOptions[dayType]}
                           </p>
                         </div>
-                      )}
+                      )} */}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )
+        : ""}
+
+      {res.IsWorkShop
+        ? res.IsWorkShop &&
+          Object.keys(groupedByDay2).length > 0 && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-blue-200 rounded-lg">
+              <h4 className="font-semibold mb-4 text-yellow-800 flex items-center">
+                <span className="mr-2">🏭</span>Workshop Schedule - Select
+                Options for Day 2
+              </h4>
+              <div className="space-y-4">
+                {Object.keys(groupedByDay2)
+                  .sort()
+                  .map((dayType) => (
+                    <div
+                      key={dayType}
+                      className="p-4 bg-white border border-yellow-300 rounded-lg shadow-sm"
+                    >
+                      <div className="flex items-center mb-3">
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full text-sm font-bold mr-3">
+                          {dayType}
+                        </span>
+                        <h5 className="font-medium text-gray-800">
+                          Day {dayType} Workshop Options
+                        </h5>
+                      </div>
+                      <div className="mb-3">
+                        <select
+                          value={selectedOptions[dayType] || ""}
+                          onChange={(e) => {
+                            const selectedOption = groupedByDay2[dayType].find(
+                              (item) => item.Text === e.target.value
+                            );
+                            handleSelectionChange(
+                              dayType,
+                              e.target.value,
+                              selectedOption ? selectedOption.Value : null
+                            );
+                          }}
+                          className="w-full p-3 border border-gray-300 rounded-lg"
+                        >
+                          <option value="">--Select--</option>
+                          {groupedByDay2[dayType].map((item) => (
+                            <option
+                              key={item.Value}
+                              value={item.Text}
+                              disabled={selectedValues["1"] === item.Value}
+                            >
+                              {item.Text}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* {selectedOptions[dayType] && (
+                        <div className="mt-2 p-2 bg-yellow-100 rounded">
+                          <p className="text-sm text-yellow-800">
+                            <strong>Selected:</strong>{" "}
+                            {selectedOptions[dayType]}
+                          </p>
+                        </div>
+                      )} */}
                     </div>
                   ))}
               </div>
@@ -507,9 +531,9 @@ const EventPriceDetails = ({ eventPriceData, pricing, setPricing }) => {
         <button
           onClick={handlePayment}
           disabled={loading}
-          className="text-white bg-blue px-6 py-3 rounded-tr-[10px] rounded-bl-[10px]"
+          className="text-white bg-blue-600 px-6 py-3 rounded-tr-[10px] rounded-bl-[10px] hover:bg-blue-700 disabled:bg-blue-400"
         >
-          {loading ? "Proceed..." : "Payment"}
+          {loading ? "Processing..." : "Proceed to Payment"}
         </button>
       </div>
     </div>
@@ -522,6 +546,7 @@ const Registration = () => {
   const [eventPriceData, setEventPriceData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingEventPrice, setIsLoadingEventPrice] = useState(false);
+  const { user } = useAuth();
   const [pricing, setPricing] = useState({
     orderAmount: "",
     CurrencyId: "",
@@ -536,18 +561,19 @@ const Registration = () => {
       try {
         setIsLoading(true);
         const [res] = await Promise.all([
-          GetDynamicRegistrationPricingData(),
+          getPriceMemebership(user),
           new Promise((resolve) => setTimeout(resolve, 2000)),
         ]);
         setPricesData(res.data?.res || []);
       } catch (err) {
         console.error("Error fetching pricing data", err);
+        toast.error("Failed to load pricing data.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchPrices();
-  }, []);
+  }, [user]);
 
   const handleSelect = async ({ rowKey, item }) => {
     const ids = Object.entries(item)
@@ -568,8 +594,8 @@ const Registration = () => {
 
         setPricing((prev) => ({
           ...prev,
-          orderAmount: eventPriceResponse.res.FinalPrice,
-          CurrencyId: eventPriceResponse.res.CurrencyId?.toString() || "",
+          orderAmount: eventPriceResponse.res?.FinalPrice || "",
+          CurrencyId: eventPriceResponse.res?.CurrencyId?.toString() || "",
           WorkShopDay1: "",
           WorkShopDay2: "",
           WorkShopDay3: "",
@@ -577,6 +603,7 @@ const Registration = () => {
         }));
       } catch (error) {
         console.error("Error fetching event price data:", error);
+        toast.error("Failed to load event price details.");
         setEventPriceData(null);
       } finally {
         setIsLoadingEventPrice(false);
@@ -598,13 +625,6 @@ const Registration = () => {
           onSelect={handleSelect}
         />
       ))}
-
-      {/* <div className="mt-6">
-        <strong>Selected Option:</strong> {selectedOption?.rowKey || "None"}
-        <br />
-        <strong>Selected IDs:</strong>{" "}
-        {selectedOption?.ids?.join(", ") || "None"}
-      </div> */}
 
       {isLoadingEventPrice && (
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
